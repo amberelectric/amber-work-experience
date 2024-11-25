@@ -1,5 +1,0 @@
-.pio/build/nodemcu-32s/FrameworkArduino/FirmwareMSC.cpp.o: \
- /Users/josh/.platformio/packages/framework-arduinoespressif32/cores/esp32/FirmwareMSC.cpp \
- /Users/josh/.platformio/packages/framework-arduinoespressif32/cores/esp32/FirmwareMSC.h \
- /Users/josh/.platformio/packages/framework-arduinoespressif32/cores/esp32/USBMSC.h \
- /Users/josh/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/qio_qspi/include/sdkconfig.h
