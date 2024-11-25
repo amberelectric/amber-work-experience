@@ -24,5 +24,5 @@ An example is provided below.
 To find your Site ID, run the following command and look for the `id` key.
 
 ```sh
-curl -H "Authorization: Bearer [AMBER_API_KEY]" https://api.amber.com.au/v1/sites
+curl -H "Authorization: Bearer [YOUR API KEY]" https://api.amber.com.au/v1/sites
 ```
