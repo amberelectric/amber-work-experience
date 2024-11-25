@@ -4,15 +4,27 @@
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include <Secrets.h>
+#include <ESP32_New_ISR_Servo.h>
 
-#define PIN 8
+#define LED_PIN 8
 #define NUMPIXELS 1
+
+#define SERVO_PIN 1
 
 #define BUFFER_SIZE 1024
 #define WIFI_ATTEMPTS 10
 #define TIMER_DELAY 300000
 
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+// Servo angles
+#define NO_DANGER           180
+#define MODERATE_DANGER     157.5
+#define HIGH_DANGER         112.5
+#define EXTREME_DANGER       67.5
+#define CATASTROPHIC_DANGER  22.5
+
+int servoIndex = -1;
+
+Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void setClock() {
   configTime(0, 0, "pool.ntp.org");
@@ -169,6 +181,15 @@ void setup()
 {
   Serial.begin(115200);
   WiFi.begin(WIFI_SSID, WIFI_PASSKEY);
+
+  // Set up the servo
+  ESP32_ISR_Servos.useTimer(1);
+  servoIndex = ESP32_ISR_Servos.setupServo(0, 500, 2500);
+  if (servoIndex == -1) {
+    Serial.println("Servo could not start!");
+  }
+  ESP32_ISR_Servos.setPosition(servoIndex, 0);
+
   // Force a run on startup
   lastRun = TIMER_DELAY;
   pixels.begin();
@@ -183,7 +204,6 @@ void loop()
     return;
   }
 
-
   if ((millis() - lastRun) > TIMER_DELAY)
   {
     Serial.println("Checking the price");
@@ -197,31 +217,37 @@ void loop()
       if (descriptor == String("spike"))
       {
         Serial.printf("Price Spike!\n");
+        ESP32_ISR_Servos.setPosition(servoIndex, CATASTROPHIC_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 0, 255));
       }
       else if (descriptor == String("high"))
       {
         Serial.printf("High prices\n");
+        ESP32_ISR_Servos.setPosition(servoIndex, EXTREME_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 0, 0));
       }
       else if (descriptor == String("neutral"))
       {
         Serial.printf("Average prices\n");
+        ESP32_ISR_Servos.setPosition(servoIndex, HIGH_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 165, 0));
       }
       else if (descriptor == String("low"))
       {
         Serial.printf("Low prices\n");
+        ESP32_ISR_Servos.setPosition(servoIndex, MODERATE_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 255, 0));
       }
       else if (descriptor == String("veryLow"))
       {
         Serial.printf("Very Low prices\n");
+        ESP32_ISR_Servos.setPosition(servoIndex, NO_DANGER);
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
       }
       else
       {
         Serial.printf("Extremely low prices\n");
+        ESP32_ISR_Servos.setPosition(servoIndex, NO_DANGER);
         pixels.setPixelColor(0, pixels.Color(0, 255, 255));
       }
     }
