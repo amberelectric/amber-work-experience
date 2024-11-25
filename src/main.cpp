@@ -1,12 +1,9 @@
+#include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <HttpClient.h> // From https://github.com/amcewen/HttpClient
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
-
-#define WIFI_SSID "[WIFI AP NAME HERE]"
-#define WIFI_PASSKEY "[WIFI PASSKEY NAME HERE]"
-#define API_KEY "[AMBER API KEY HERE]"
-#define SITE_ID "[AMBER SITE ID KEY HERE]" // To get this, run `curl -H "Authorization: Bearer [AMBER_API_KEY] https://api.amber.com.au/v1/sites" and look for the id
+#include <Secrets.h>
 
 #define PIN 8
 #define NUMPIXELS 1
@@ -61,7 +58,7 @@ bool connect()
   {
     Serial.print("Connected to WiFi network with IP Address: ");
     Serial.println(WiFi.localIP());
-    setClock();  
+    setClock();
     return true;
   }
 }
@@ -196,7 +193,7 @@ void loop()
     if (descriptor != String(""))
     {
       Serial.printf("Current Descriptor: %s\n", descriptor);
-      
+
       if (descriptor == String("spike"))
       {
         Serial.printf("Price Spike!\n");
