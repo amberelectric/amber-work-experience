@@ -16,11 +16,11 @@
 #define TIMER_DELAY 300000
 
 // Servo angles
-#define NO_DANGER           180
-#define MODERATE_DANGER     157.5
-#define HIGH_DANGER         112.5
-#define EXTREME_DANGER       67.5
-#define CATASTROPHIC_DANGER  22.5
+#define NO_DANGER           168.5
+#define MODERATE_DANGER     150
+#define HIGH_DANGER         108
+#define EXTREME_DANGER       58
+#define CATASTROPHIC_DANGER  11
 
 int servoIndex = -1;
 
@@ -223,31 +223,31 @@ void loop()
       else if (descriptor == String("high"))
       {
         Serial.printf("High prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, EXTREME_DANGER);
+        ESP32_ISR_Servos.setPosition(servoIndex, CATASTROPHIC_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 0, 0));
       }
       else if (descriptor == String("neutral"))
       {
         Serial.printf("Average prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, HIGH_DANGER);
+        ESP32_ISR_Servos.setPosition(servoIndex, EXTREME_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 165, 0));
       }
       else if (descriptor == String("low"))
       {
         Serial.printf("Low prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, MODERATE_DANGER);
+        ESP32_ISR_Servos.setPosition(servoIndex, HIGH_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 255, 0));
       }
       else if (descriptor == String("veryLow"))
       {
         Serial.printf("Very Low prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, NO_DANGER);
+        ESP32_ISR_Servos.setPosition(servoIndex, MODERATE_DANGER);
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
       }
       else
       {
         Serial.printf("Extremely low prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, NO_DANGER);
+        ESP32_ISR_Servos.setPosition(servoIndex, MODERATE_DANGER);
         pixels.setPixelColor(0, pixels.Color(0, 255, 255));
       }
     }
