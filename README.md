@@ -8,11 +8,7 @@ an [ESP32-C3 WROOM Dev Board](https://core-electronics.com.au/esp32-c3-wroom-dev
 Theoretically, you could use any Arduino-enabled board and any servo motor.
 
 ### Prerequisites
-You have to install the following installed to use FIDGET:
-- [PlatformIO Core](https://docs.platformio.org/en/latest/core/installation/index.html) (CLI for interfacing with the ESP32)
-  - [ArduinoJSON](https://registry.platformio.org/libraries/bblanchon/ArduinoJson/installation)
-  - [Adafruit NeoPixel](https://registry.platformio.org/libraries/adafruit/Adafruit%20NeoPixel)
-- [HTTPClient](https://github.com/amcewen/HttpClient)
+The only prerequisite for FIDGET is [PlatformIO Core](https://docs.platformio.org/en/latest/core/installation/index.html), a CLI for interfacing with the ESP32.
 
 ### Secrets
 FIDGET uses the Amber API to fetch the current price descriptor.

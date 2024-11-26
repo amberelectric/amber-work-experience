@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
-#include <HttpClient.h> // From https://github.com/amcewen/HttpClient
+#include <HttpClient.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include <Secrets.h>
