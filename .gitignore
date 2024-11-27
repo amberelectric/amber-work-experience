@@ -45,3 +45,4 @@
 
 # Secrets
 src/secrets.h
+resources/v1/sites/
