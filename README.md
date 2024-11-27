@@ -28,6 +28,12 @@ To find your Site ID, run the following command and look for the `id` key.
 curl -H "Authorization: Bearer [YOUR API KEY]" https://api.amber.com.au/v1/sites
 ```
 
+If you are using the debug server, you must add the following line as well.
+
+```c++
+#define DEBUG_HOST "[YOUR IP ADDRESS OR HOSTNAME]"
+```
+
 ### Servo
 The servo motor has to be connected to the ESP32 in the following way:
 
