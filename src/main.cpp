@@ -1,10 +1,19 @@
 #include <Arduino.h>
-#include <WiFiClientSecure.h>
 #include <HttpClient.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include <Secrets.h>
 #include <ESP32_New_ISR_Servo.h>
+
+//#define USE_DEBUG_SERVER  // Uncomment this to use the local debugging API
+
+// Use http when on the debug server
+#ifdef USE_DEBUG_SERVER
+  #include <WiFiClient.h>
+  #include <WiFi.h>
+#else
+  #include <WiFiClientSecure.h>
+#endif
 
 #define LED_PIN 8
 #define NUMPIXELS 1
@@ -66,15 +75,33 @@ bool connect()
 
 String fetchDescriptor()
 {
-  WiFiClientSecure client;
-  client.setInsecure();
+  #ifdef USE_DEBUG_SERVER
+    WiFiClient client;
+  #else
+    WiFiClientSecure client;
+    client.setInsecure();
+  #endif
+
   HttpClient http(client);
   int err = 0;
+
+  const char* server_name = "api.amber.com.au";
+  uint16_t port = 443;
+
+  #ifdef USE_DEBUG_SERVER
+    #ifdef DEBUG_HOST
+      Serial.println("Using debug server");
+      server_name = DEBUG_HOST;
+      port = 8000;
+    #else
+      Serial.println("No debug URL provided! Using Amber API.");
+    #endif
+  #endif
 
   String path = String("/v1/sites/") + String(SITE_ID) + String("/prices/current");
 
   http.beginRequest();
-  err = http.startRequest("api.amber.com.au", 443, path.c_str(), HTTP_METHOD_GET, "ArduinoAmberLight");
+  err = http.startRequest(server_name, port, path.c_str(), HTTP_METHOD_GET, "AmberFidget");
   if (err != HTTP_SUCCESS)
   {
     switch (err)
