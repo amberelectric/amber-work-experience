@@ -50,19 +50,8 @@ unsigned long lastRun = 0;
 bool connect()
 {
   Serial.print("Connecting to WiFi");
-  int attempts = 0;
 
-  while (WiFi.status() != WL_CONNECTED && attempts < WIFI_ATTEMPTS)
-  {
-    delay(500);
-    Serial.print(".");
-    attempts++;
-  }
-
-  Serial.println("");
-
-  if (attempts == WIFI_ATTEMPTS)
-  {
+  if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Unable to connect to the WiFi");
     return false;
   }
@@ -189,23 +178,27 @@ void setup()
     Serial.println("Servo could not start!");
   }
   ESP32_ISR_Servos.setPosition(servoIndex, 0);
+  // Force a run 1500ms after startup (to allow servo animation to complete)
+  lastRun = 5000 - TIMER_DELAY;
 
-  // Force a run on startup
-  lastRun = TIMER_DELAY;
   pixels.begin();
 }
 
 void loop()
 {
-  if (WiFi.status() != WL_CONNECTED && !connect())
-  {
-    Serial.println("WiFi connection attempts timed out. Will try again in a second.");
-    delay(1000);
-    return;
+  // Connect to WiFi
+  if (WiFi.status() != WL_CONNECTED)  {
+    if ((millis()-lastConnectionAttempt) < CONNECT_DELAY) {
+      return;
+    }
+    if (!(((millis()-lastConnectionAttempt) > CONNECT_DELAY) && connect())) {
+        Serial.println("WiFi connection not acquired yet. Trying again soon...");
+        lastConnectionAttempt = millis();
+        return;
+    }
   }
 
-  if ((millis() - lastRun) > TIMER_DELAY)
-  {
+  if ((millis() - lastRun) > TIMER_DELAY)  {
     Serial.println("Checking the price");
     String descriptor = fetchDescriptor();
 
