@@ -45,3 +45,13 @@ The servo motor has to be connected to the ESP32 in the following way:
 
 Note that you can use any of the GND or 5V pins on the ESP32.
 
+
+### Debug Server
+To use the debug server, run `resources/debugServer.sh`, then enter your credentials when prompted.
+This script will copy real-time data from the Amber API into `resources/v1/sites/[YOUR SITE ID]/prices/current`,
+then start a local web server on port 8000 with Python's `http.server`.
+
+On the ESP32 side, all you need to do is uncomment this line near the start of the file:
+```c++
+#define USE_DEBUG_SERVER
+```
