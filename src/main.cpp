@@ -209,6 +209,10 @@ void sequence_motions(float newTarget) {
   }
   timeline.clear();
   timeline.add(target);
+
+  // Big complex decision tree
+  // If the current and desired servo position are on the same side, AND the current position is closer to the
+  // top (≈90˚), then bounce "down" (away from 90˚). OTHERWISE, just back in/out.
   if (target < SERVO_MIDPOINT) {
     if (newTarget < SERVO_MIDPOINT && target > newTarget) {
       timeline[target].then<Ease::BounceOut>(newTarget, (target - newTarget) * ANIMATION_SPEED);
@@ -242,7 +246,7 @@ void setup()
     .then<Ease::BounceOut>(NO_DANGER, 2000);
   timeline.start();
 
-  // Force a run 1500ms after startup (to allow servo animation to complete)
+  // Force a run 5000ms after startup (to allow servo animation to complete)
   lastRun = 5000 - TIMER_DELAY;
 
   pixels.begin();
