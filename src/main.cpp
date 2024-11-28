@@ -4,6 +4,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <Secrets.h>
 #include <ESP32_New_ISR_Servo.h>
+#include <Tween.h>
 
 //#define USE_DEBUG_SERVER  // Uncomment this to use the local debugging API
 
@@ -25,13 +26,22 @@
 #define TIMER_DELAY 300000
 
 // Servo angles
-#define NO_DANGER           168.5
+#define NO_DANGER           173
 #define MODERATE_DANGER     150
 #define HIGH_DANGER         108
+#define SERVO_MIDPOINT       81
 #define EXTREME_DANGER       58
 #define CATASTROPHIC_DANGER  11
 
+#define ANIMATION_SPEED 15  // Bigger numbers are slower
+
 int servoIndex = -1;
+
+Tween::Timeline timeline;
+float target = 0.f;
+
+int lastConnectionAttempt = 0;
+#define CONNECT_DELAY 500
 
 Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -59,19 +69,8 @@ unsigned long lastRun = 0;
 bool connect()
 {
   Serial.print("Connecting to WiFi");
-  int attempts = 0;
 
-  while (WiFi.status() != WL_CONNECTED && attempts < WIFI_ATTEMPTS)
-  {
-    delay(500);
-    Serial.print(".");
-    attempts++;
-  }
-
-  Serial.println("");
-
-  if (attempts == WIFI_ATTEMPTS)
-  {
+  if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Unable to connect to the WiFi");
     return false;
   }
@@ -204,6 +203,32 @@ String fetchDescriptor()
   return String("");
 }
 
+void sequence_motions(float newTarget) {
+  if (target == newTarget) {  // TODO: make it nicer
+    return;
+  }
+  timeline.clear();
+  timeline.add(target);
+
+  // Big complex decision tree
+  // If the current and desired servo position are on the same side, AND the current position is closer to the
+  // top (≈90˚), then bounce "down" (away from 90˚). OTHERWISE, just back in/out.
+  if (target < SERVO_MIDPOINT) {
+    if (newTarget < SERVO_MIDPOINT && target > newTarget) {
+      timeline[target].then<Ease::BounceOut>(newTarget, (target - newTarget) * ANIMATION_SPEED);
+    } else {
+      timeline[target].then<Ease::BackInOut>(newTarget, abs(target - newTarget) * ANIMATION_SPEED * 2);
+    }
+  } else {
+    if (newTarget > SERVO_MIDPOINT && target < newTarget) {
+      timeline[target].then<Ease::BounceOut>(newTarget, (newTarget - target) * ANIMATION_SPEED);
+    } else {
+      timeline[target].then<Ease::BackInOut>(newTarget, abs(newTarget - target) * ANIMATION_SPEED * 2);
+    }
+  }
+  timeline.start();
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -215,24 +240,37 @@ void setup()
   if (servoIndex == -1) {
     Serial.println("Servo could not start!");
   }
-  ESP32_ISR_Servos.setPosition(servoIndex, 0);
+  timeline.add(target)
+    .init(SERVO_MIDPOINT)
+    .offset(1000)
+    .then<Ease::BounceOut>(NO_DANGER, 2000);
+  timeline.start();
 
-  // Force a run on startup
-  lastRun = TIMER_DELAY;
+  // Force a run 5000ms after startup (to allow servo animation to complete)
+  lastRun = 5000 - TIMER_DELAY;
+
   pixels.begin();
 }
 
 void loop()
 {
-  if (WiFi.status() != WL_CONNECTED && !connect())
-  {
-    Serial.println("WiFi connection attempts timed out. Will try again in a second.");
-    delay(1000);
-    return;
+  // Update the servo position as set by the tweening library
+  timeline.update();
+  ESP32_ISR_Servos.setPosition(servoIndex, target);
+
+  // Connect to WiFi
+  if (WiFi.status() != WL_CONNECTED)  {
+    if ((millis()-lastConnectionAttempt) < CONNECT_DELAY) {
+      return;
+    }
+    if (!(((millis()-lastConnectionAttempt) > CONNECT_DELAY) && connect())) {
+        Serial.println("WiFi connection not acquired yet. Trying again soon...");
+        lastConnectionAttempt = millis();
+        return;
+    }
   }
 
-  if ((millis() - lastRun) > TIMER_DELAY)
-  {
+  if ((millis() - lastRun) > TIMER_DELAY)  {
     Serial.println("Checking the price");
     String descriptor = fetchDescriptor();
 
@@ -244,37 +282,37 @@ void loop()
       if (descriptor == String("spike"))
       {
         Serial.printf("Price Spike!\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, CATASTROPHIC_DANGER);
+        sequence_motions(CATASTROPHIC_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 0, 255));
       }
       else if (descriptor == String("high"))
       {
         Serial.printf("High prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, CATASTROPHIC_DANGER);
+        sequence_motions(CATASTROPHIC_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 0, 0));
       }
       else if (descriptor == String("neutral"))
       {
         Serial.printf("Average prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, EXTREME_DANGER);
+        sequence_motions(EXTREME_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 165, 0));
       }
       else if (descriptor == String("low"))
       {
         Serial.printf("Low prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, HIGH_DANGER);
+        sequence_motions(HIGH_DANGER);
         pixels.setPixelColor(0, pixels.Color(255, 255, 0));
       }
       else if (descriptor == String("veryLow"))
       {
         Serial.printf("Very Low prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, MODERATE_DANGER);
+        sequence_motions(MODERATE_DANGER);
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
       }
       else
       {
         Serial.printf("Extremely low prices\n");
-        ESP32_ISR_Servos.setPosition(servoIndex, MODERATE_DANGER);
+        sequence_motions(MODERATE_DANGER);
         pixels.setPixelColor(0, pixels.Color(0, 255, 255));
       }
     }
