@@ -22,6 +22,7 @@ These parts are only needed to **make** the FIDGET. They are not required once i
 - 2D Printer
 - 3D Printer (Not necessary. You can just tape or hot glue the components together.)
 - Box Cutter
+- Hair Dryer (I'll explain I promise)
 
 ### Purchased
 Links are provided for Core Electronics, a Newcastle-based electronics provider with generally pretty good prices.
@@ -52,16 +53,97 @@ When printing, bigger layer heights are recommended to increase strength.
 
 ## Make
 
-Servo
-The servo motor has to be connected to the ESP32 in the following way:
+### 1. Cut the Sign Cardboard
+Use the box cutter to cut a piece of blank cardboard about half a centimeter bigger than the sign on all sides,
+as shown in the picture below:
 
-| ESP32 | Servo                |
-|-------|----------------------|
-| GND   | - (Brown wire)       |
-| 5V    | + (Red wire)         |
-| 0     | Signal (Orange wire) |
+![Cardboard cut about half a centimeter bigger than the sign on all sides](resources/images/instructions/cut%20cardboard.png)
+
+Then, align the sign in the center of the cardboard and glue it on.
+Regular (non-hot) glue is preferable as it allows the paper to lie flush on the cardboard.
+
+### 2. Wiring
+The servo motor has to be connected to the ESP32 as follows:
+
+| ESP32 Pin | Servo Pin            |
+|-----------|----------------------|
+| GND       | - (Brown wire)       |
+| 5V        | + (Red wire)         |
+| 0         | Signal (Orange wire) |
 
 Note that you can use any of the GND or 5V pins on the ESP32.
+
+### 3. Mount the Servo
+To mount the servo on the sign you need to do a few things:
+1. Use something sharp and pointy (pen, box cutter, scissors, drill, hole punch, etc) to punch a hole in the front of the sign where the servo will stick out.
+2. If you 3D printed `servo top.stl` and `servo bottom.stl`:
+   1. Place the servo inside `servo bottom`.
+   2. Place `servo top` on top.
+   3. Make sure the servo wire is out the side of the case, and the front of the servo protrudes from the front of the case.
+   4. Carefully hot glue or melt the two halves of the servo case together, making sure not to get glue on the servo within.
+3. Glue the servo case on to the back of the sign, so that the wires point to the left and the front of the servo goes through the hole in the sign.
+
+The attached servo should look like the below image:
+
+![Mounted servo motor](resources/images/instructions/mount%20servo.png)
+
+### 4. Attach the Arrow
+Turning around to the front of the sign, you can now attach the arrow to the servo motor.
+In the bag of hardware that comes with the servo motor, there are five "horns" (pieces of plastic that attach to the gear on the front of the servo), one small screw and two large screws.
+
+1. Make sure the servo is at 0˚. (Use the code at the end of this step)
+2. Attach the **shortest** servo horn to the servo gear, pointing directly to the right. Note that it doesn't have to be pointing exactly right. You can adjust the angles it points to easily at the top of `main.cpp`.  
+3. Screw the horn in place with the small screw.
+4. Hot glue the arrow onto the horn.
+
+To set the servo to 0˚, use the following code:
+```c++
+#include <ESP32_New_ISR_Servo.h>
+
+void setup() {
+  ESP32_ISR_Servos.useTimer(0);  // Use timer 0
+  int servoIndex = ESP32_ISR_Servos.setupServo(0, 500, 2500);  // Start the servo on pin 0
+  ESP32_ISR_Servos.setPosition(servoIndex, 0);  // Set the servo to 0˚
+}
+
+void loop() {}
+```
+
+The attached arrow should look like the below images:
+
+![Attached arrow](resources/images/instructions/attach%20arrow%201.png)
+![Attached arrow](resources/images/instructions/attach%20arrow%202.png)
+
+### 5. Attach the ESP23
+Attaching the ESP32 is fairly simple.
+If you printed the ESP32 mount, hot glue it on the back of the FIDGET to the left, and clip in the ESP32.
+If you didn't simply glue or tape the ESP32 in place.
+
+Note:
+The 3D printed mount may not fit perfectly.
+Test it before you hot glue it in place and then bend the arms while they're hot from the glue.
+
+The attached ESP32 should look like the below image:
+
+![Mounted ESP32](resources/images/instructions/mount%20esp32.png)
+
+### 6. Finishing touches
+Use a rubber band to hold the wires together neatly.
+I feel like you shouldn't need an image for this one...
+
+Then, cut out some more cardboard and hot glue it into a stand shape, like this:
+
+![FIDGET Stand](resources/images/instructions/make%20stand.png)
+
+The design is primarily up to your imagination/engineering, but you should add a cross-beam to stop the cardboard from bending.
+
+### 7. You did it!!
+Congragulations! You built the Amber FIDGET without blowing anything up!
+Behold, the final product.
+(The paperclip is because I had glue issues.)
+
+![Finished FIDGET](resources/images/instructions/finished%201.png)
+![Finished FIDGET](resources/images/instructions/finished%202.png)
 
 # (Quick) Start
 
