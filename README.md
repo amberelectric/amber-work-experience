@@ -1,4 +1,4 @@
-![Amber FIDGET - Fire Danger but it's Electricity](resources/images/Header/Header.png)
+![Amber FIDGET - Fire Danger but it's Electricity](resources/images/header/header.png)
 
 # Intro / Say What Now?!
 
@@ -15,13 +15,40 @@ It then translates this into a fire danger rating, and tells a servo motor to po
 
 ## Parts
 
+### Owned
+These parts are only needed to **make** the FIDGET. They are not required once it's running
+- Laptop (preferably should turn on)
+- Hot Glue Gun
+- 2D Printer
+- 3D Printer (Not necessary. You can just tape or hot glue the components together.)
+- Box Cutter
+
 ### Purchased
+Links are provided for Core Electronics, a Newcastle-based electronics provider with generally pretty good prices.
+- [ESP32-C3 WROOM Dev Board](https://core-electronics.com.au/esp32-c3-wroom-development-board.html) (Or any other ESP32 board)
+- [9g Micro Servo](https://core-electronics.com.au/feetech-fs90-1-5kgcm-micro-servo-9g.html) (Or any 9g servo with half-decent torque)
+- [Male to Female Jumper Wires](https://core-electronics.com.au/jumper-wires-premium-12-m-f-pack-of-10.html) (Any wire will work but jumpers are nicer)
+- [USB Micro-B Cable](https://core-electronics.com.au/usb-cable-type-a-to-micro-b-1m.html) (Once the FIDGET is running, it's possible to power it off a battery pack)
 
 ### Printed In Two Dimensions
+The front of the sign has to be printed (or you can draw it, I guess).
+If you have a colour printer, use `resources/images/sign/sign colour.png`.
+Otherwise, use `resources/images/sign/sign bw.png` and colour in the sections with a pen or highlighter.
 
 ### Printed In Three Dimensions
+Note: These parts are not strictly necessary, but they make putting together and pulling apart the FIDGET much easier.
 
-### Cardboard & Hot Glue
+The files you need to print are in the `resources/objects` folder.
+`fire danger sign.f3d` is the Fusion 360 model for the entire FIDGET, and `fire danger sign.stl` is the whole model.
+You only need to print `arrow.stl`, `servo bottom.stl`, `servo top.stl` and `esp32.stl`.
+
+When printing, bigger layer heights are recommended to increase strength.
+
+### Materials
+- Cardboard box of regular thickness
+- Hot glue
+- Regular glue (tape will work too)
+- Rubber band (a cable tie will work too)
 
 ## Make
 
@@ -66,11 +93,6 @@ If you are using the debug server, you must add the following line to `secrets.h
 ```
 
 # Usage
-
-Parts
-For this project,
-an [ESP32-C3 WROOM Dev Board](https://core-electronics.com.au/esp32-c3-wroom-development-board.html) and a [9g Micro Servo](https://core-electronics.com.au/feetech-fs90-1-5kgcm-micro-servo-9g.html) were used.
-Theoretically, you could use any Arduino-enabled board and any servo motor
 
 # Troubleshooting
 
