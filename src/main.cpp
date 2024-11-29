@@ -7,6 +7,7 @@
 #include <Tween.h>
 
 //#define USE_DEBUG_SERVER  // Uncomment this to use the local debugging API
+#define LOG_LEVEL LOGGING_INFO
 
 // Use http when on the debug server
 #ifdef USE_DEBUG_SERVER
@@ -24,6 +25,25 @@
 #define BUFFER_SIZE 1024
 #define WIFI_ATTEMPTS 10
 #define TIMER_DELAY 300000
+
+// Log levels
+#define LOGGING_NONE    0
+#define LOGGING_FATAL   1
+#define LOGGING_ERROR   2
+#define LOGGING_WARNING 3
+#define LOGGING_INFO    4
+#define LOGGING_DEBUG   5
+#define LOGGING_VERBOSE 6
+
+// LED colours
+const int LED_NONE[]   = {  0,   0,   0};
+const int LED_RED[]    = {255,   0,   0};
+const int LED_YELLOW[] = {255, 255,   0};
+const int LED_GREEN[]  = {  0, 255,   0};
+const int LED_CYAN[]   = {  0, 255, 255};
+const int LED_BLUE[]   = {  0,   0, 255};
+const int LED_PURPLE[] = {255,   0, 255};
+const int LED_WHITE[]  = {255, 255, 255};
 
 // Servo angles
 #define NO_DANGER           173
@@ -45,39 +65,89 @@ int lastConnectionAttempt = 0;
 
 Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
+void setLedColour(const int colour[3]) {
+    pixels.clear();
+    pixels.setPixelColor(0, pixels.Color(colour[0], colour[1], colour[2]));
+    pixels.show();
+}
+
+void log(String text, int level, const int colour1[3], const int colour2[3]) {
+  if (LOG_LEVEL >= level) {
+    switch (level) {
+      case LOGGING_FATAL:
+        Serial.print("💥 Fatal Error: "); break;
+      case LOGGING_ERROR:
+        Serial.print("❗️ Error: "); break;
+      case LOGGING_WARNING:
+        Serial.print("⚠️ Warning: "); break;
+      case LOGGING_INFO:
+        Serial.print("ℹ️ Info: "); break;
+      case LOGGING_DEBUG:
+        Serial.print("🪲 Debug: "); break;
+      case LOGGING_VERBOSE:
+        Serial.print("Verbose: "); break;
+    }
+    Serial.println(text);
+  }
+
+  if (colour1 == LED_NONE) {
+    return;
+  }
+  if (level == LOGGING_FATAL) {
+    while (true) {
+      setLedColour(LED_RED);
+      delay(300);
+      setLedColour(colour1);
+      delay(300);
+      if (colour2 != LED_NONE) {
+        setLedColour(colour2);
+        delay(300);
+      }
+      setLedColour(LED_NONE);
+      delay(1000);
+    }
+  } else if (level <= LOGGING_WARNING) {
+    setLedColour(LED_RED);
+    delay(300);
+  }
+  setLedColour(colour1);
+  if (colour2 != LED_NONE) {
+    delay(300);
+    setLedColour(colour2);
+    delay(300);
+    setLedColour(LED_NONE);
+  }
+}
+
 void setClock() {
   configTime(0, 0, "pool.ntp.org");
 
-  Serial.print(F("Waiting for NTP time sync: "));
+  log(F("Setting time..."), LOGGING_INFO, LED_GREEN, LED_NONE);
   time_t nowSecs = time(nullptr);
   while (nowSecs < 8 * 3600 * 2) {
     delay(500);
-    Serial.print(F("."));
     yield();
     nowSecs = time(nullptr);
   }
 
-  Serial.println();
   struct tm timeinfo;
   gmtime_r(&nowSecs, &timeinfo);
-  Serial.print(F("Current time: "));
-  Serial.print(asctime(&timeinfo));
+  log(String(F("Current time: ")) + asctime(&timeinfo), LOGGING_VERBOSE, LED_NONE, LED_NONE);
 }
 
 
 unsigned long lastRun = 0;
 bool connect()
 {
-  Serial.print("Connecting to WiFi");
+  log(F("Connecting to Wi-Fi…"), LOGGING_INFO, LED_YELLOW, LED_NONE);
 
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Unable to connect to the WiFi");
+    log(String(F("Could not connect to Wi-Fi")) + String(WiFi.status()), LOGGING_WARNING, LED_RED, LED_NONE);
     return false;
   }
   else
   {
-    Serial.print("Connected to WiFi network with IP Address: ");
-    Serial.println(WiFi.localIP());
+    log(String(F("Connected to WiFi network with IP Address: ")) + WiFi.localIP(), LOGGING_VERBOSE, LED_NONE, LED_NONE);
     setClock();
     return true;
   }
@@ -100,13 +170,16 @@ String fetchDescriptor()
 
   #ifdef USE_DEBUG_SERVER
     #ifdef DEBUG_HOST
-      Serial.println("Using debug server");
+      log(F("Fetching descriptor from debug server..."), LOGGING_INFO, LED_BLUE, LED_NONE);
       server_name = DEBUG_HOST;
       port = 8000;
     #else
-      Serial.println("No debug URL provided! Using Amber API.");
+      log(F("Debug API URL not provided. Using Amber API."), LOGGING_WARNING, LED_PURPLE, LED_NONE);
+      delay(500);
     #endif
   #endif
+
+  if (server_name == "api.amber.com.au") {log(F("Fetching descriptor..."), LOGGING_INFO, LED_CYAN, LED_NONE);}
 
   String path = String("/v1/sites/") + String(SITE_ID) + String("/prices/current");
 
@@ -117,16 +190,16 @@ String fetchDescriptor()
     switch (err)
     {
     case HTTP_ERROR_CONNECTION_FAILED:
-      Serial.println("ERROR: Unable to connect to the API");
+      log(F("Could not connect to API"), LOGGING_ERROR, LED_YELLOW, LED_RED);
       break;
     case HTTP_ERROR_API:
-      Serial.println("ERROR: Configuration issue");
+      log(F("Could not configure API"), LOGGING_ERROR, LED_YELLOW, LED_YELLOW);
       break;
     case HTTP_ERROR_TIMED_OUT:
-      Serial.println("ERROR: Connection timed out");
+      log(F("API connection timed out"), LOGGING_ERROR, LED_YELLOW, LED_GREEN);
       break;
     case HTTP_ERROR_INVALID_RESPONSE:
-      Serial.println("ERROR: Invalid response received");
+      log(F("API returned invalid response"), LOGGING_ERROR, LED_YELLOW, LED_CYAN);
       break;
     }
     http.stop();
@@ -140,7 +213,7 @@ String fetchDescriptor()
   err = http.responseStatusCode();
   if (err != 200)
   {
-    Serial.printf("ERROR: Received Status Code: %d\n", err);
+    log(String(F("API returned error code: ")) + String(err), LOGGING_ERROR, LED_GREEN, LED_RED);
     http.stop();
     return String("");
   }
@@ -148,7 +221,7 @@ String fetchDescriptor()
   err = http.skipResponseHeaders();
   if (err != HTTP_SUCCESS)
   {
-    Serial.printf("ERROR: Unable to skip headers: %d\n", err);
+    log(String(F("Could not skip HTTP headers: ")) + String(err), LOGGING_ERROR, LED_GREEN, LED_YELLOW);
     http.stop();
     return String("");
   }
@@ -181,7 +254,7 @@ String fetchDescriptor()
   deserializeJson(doc, (char *)&json);
   if (!doc.is<JsonArray>())
   {
-    Serial.println("Returned JSON object is not an array");
+    log(F("Could not parse returned JSON"), LOGGING_ERROR, LED_CYAN, LED_RED);
     return String("");
   }
 
@@ -199,12 +272,13 @@ String fetchDescriptor()
     }
   }
 
-  Serial.println("Error: General channel not found");
+  log(F("Could not find general channel in JSON"), LOGGING_ERROR, LED_CYAN, LED_YELLOW);
   return String("");
 }
 
 void sequence_motions(float newTarget) {
-  if (target == newTarget) {  // TODO: make it nicer
+  log(F("Updating servo"), LOGGING_DEBUG, LED_PURPLE, LED_NONE);
+  if (target == newTarget) {
     return;
   }
   timeline.clear();
@@ -235,10 +309,10 @@ void setup()
   WiFi.begin(WIFI_SSID, WIFI_PASSKEY);
 
   // Set up the servo
-  ESP32_ISR_Servos.useTimer(1);
+  ESP32_ISR_Servos.useTimer(0);
   servoIndex = ESP32_ISR_Servos.setupServo(0, 500, 2500);
   if (servoIndex == -1) {
-    Serial.println("Servo could not start!");
+    log(F("Could not start servo"), LOGGING_FATAL, LED_BLUE, LED_NONE);
   }
   timeline.add(target)
     .init(SERVO_MIDPOINT)
@@ -271,53 +345,45 @@ void loop()
   }
 
   if ((millis() - lastRun) > TIMER_DELAY)  {
-    Serial.println("Checking the price");
     String descriptor = fetchDescriptor();
 
-    pixels.clear();
     if (descriptor != String(""))
     {
-      Serial.printf("Current Descriptor: %s\n", descriptor);
+      log(String(F("Current Price Descriptor: ")) + descriptor, LOGGING_VERBOSE, LED_NONE, LED_NONE);
 
       if (descriptor == String("spike"))
       {
-        Serial.printf("Price Spike!\n");
+        log(F("Price Spike!"), LOGGING_VERBOSE, LED_NONE, LED_NONE);
         sequence_motions(CATASTROPHIC_DANGER);
-        pixels.setPixelColor(0, pixels.Color(255, 0, 255));
       }
       else if (descriptor == String("high"))
       {
-        Serial.printf("High prices\n");
+        log(F("High prices"), LOGGING_VERBOSE, LED_NONE, LED_NONE);
         sequence_motions(CATASTROPHIC_DANGER);
-        pixels.setPixelColor(0, pixels.Color(255, 0, 0));
       }
       else if (descriptor == String("neutral"))
       {
-        Serial.printf("Average prices\n");
+        log(F("Average prices"), LOGGING_VERBOSE, LED_NONE, LED_NONE);
         sequence_motions(EXTREME_DANGER);
-        pixels.setPixelColor(0, pixels.Color(255, 165, 0));
       }
       else if (descriptor == String("low"))
       {
-        Serial.printf("Low prices\n");
+        log(F("Low prices"), LOGGING_VERBOSE, LED_NONE, LED_NONE);
         sequence_motions(HIGH_DANGER);
-        pixels.setPixelColor(0, pixels.Color(255, 255, 0));
       }
       else if (descriptor == String("veryLow"))
       {
-        Serial.printf("Very Low prices\n");
+        log(F("Very Low prices"), LOGGING_VERBOSE, LED_NONE, LED_NONE);
         sequence_motions(MODERATE_DANGER);
-        pixels.setPixelColor(0, pixels.Color(0, 255, 0));
       }
       else
       {
-        Serial.printf("Extremely low prices\n");
+        log(F("Extremely low prices"), LOGGING_VERBOSE, LED_NONE, LED_NONE);
         sequence_motions(MODERATE_DANGER);
-        pixels.setPixelColor(0, pixels.Color(0, 255, 255));
       }
     }
-    pixels.show();
 
     lastRun = millis();
+    log(F("Done!"), LOGGING_INFO, LED_WHITE, LED_NONE);
   }
 }

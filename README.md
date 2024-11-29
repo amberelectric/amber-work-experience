@@ -28,7 +28,7 @@ To find your Site ID, run the following command and look for the `id` key.
 curl -H "Authorization: Bearer [YOUR API KEY]" https://api.amber.com.au/v1/sites
 ```
 
-If you are using the debug server, you must add the following line as well.
+If you are using the debug server, you must add the following line to `secrets.h` as well.
 
 ```c++
 #define DEBUG_HOST "[YOUR IP ADDRESS OR HOSTNAME]"
@@ -55,3 +55,37 @@ On the ESP32 side, all you need to do is uncomment this line near the start of t
 ```c++
 #define USE_DEBUG_SERVER
 ```
+
+### Logging
+The following table shows the status messages displayed on the ESP32 LED and in the Serial Monitor.
+A description of the state is in the `Status` column,
+the LED colour and Serial output are shown in the next two columns,
+and the final column shows the minimum required log level to show the state.
+
+| Status                         | LED Colour        | Print Statement                              | Level   |
+|--------------------------------|-------------------|----------------------------------------------|---------|
+| Connecting to Wi-Fi            | Yellow            | Connecting to Wi-Fi...                       | Info    |
+| Setting Clock                  | Green             | Setting time...                              | Info    |
+| Fetching Descriptor            | Cyan              | Fetching descriptor...                       | Info    |
+| Fetching Debug Descriptor      | Blue              | Fetching descriptor from debug server...     | Info    |
+| Moving Servo                   | Purple            | Updating servo...                            | Debug   |
+| Idle                           | White             | Done!                                        | Info    |
+| **Errors**                     | **Red-...**       |                                              |         |
+| Could not connect to Wi-Fi     | Red-Red           | Could not connect to Wi-Fi                   | Warning |
+| Could not connect to the API   | Red-Yellow-Red    | Could not connect to API                     | Error   |
+| Could not configure API        | Red-Yellow-Yellow | Could not configure API                      | Error   |
+| API timed out                  | Red-Yellow-Green  | API connection timed out                     | Error   |
+| API gave invalid response      | Red-Yellow-Cyan   | API returned invalid response                | Error   |
+| HTTP status code error         | Red-Green-Red     | API returned error code: [CODE]              | Error   |
+| HTTP could not skip headers    | Red-Green-Yellow  | Could not skip HTTP headers: [CODE]          | Error   |
+| Could not parse JSON           | Red-Cyan-Red      | Could not parse returned JSON                | Error   |
+| Could not find general channel | Red-Cyan-Yellow   | Could not find general channel in JSON       | Error   |
+| Servo could not start          | Red-Blue          | Could not start servo                        | Fatal   |
+| Debug API not provided         | Red-Purple        | Debug API URL not provided. Using Amber API. | Warning |
+
+
+#### Notes
+1. Where more than one colour is listed in the `LED Colour` column,
+   the LED will flash the colours in sequence with a 300ms delay.
+2. The LED will show the appropriate colour no matter what the log level is set to.
+3. If the `Level` is `Fatal`, the program will stop and the LED will flash the pattern repeatedly with a one second break.
