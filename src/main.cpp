@@ -67,6 +67,20 @@ Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void log(String text, int level) {
   if (LOG_LEVEL >= level) {
+    switch (level) {
+      case LOGGING_FATAL:
+        Serial.print("💥 Fatal Error: "); break;
+      case LOGGING_ERROR:
+        Serial.print("❗️ Error: "); break;
+      case LOGGING_WARNING:
+        Serial.print("⚠️ Warning: "); break;
+      case LOGGING_INFO:
+        Serial.print("ℹ️ Info: "); break;
+      case LOGGING_DEBUG:
+        Serial.print("🪲 Debug: "); break;
+      case LOGGING_VERBOSE:
+        Serial.print("Verbose: "); break;
+    }
     Serial.println(text);
   }
   // Will add LED functionality here soon
