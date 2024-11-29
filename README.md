@@ -1,16 +1,44 @@
-# Amber FIDGET
-### (<big>FI</big><small>re</small> <big>D</big><small>an</small><big>G</big><small>er but it's</small> <big>E</big><small>lec</small><big>T</big><small>ricity</small>)
+<img style="border-radius: 25px; margin-top: 25px" alt="Amber FIDGET (Fire Danger But It&#39;s Electricity)" src="resources/images/Header/Header.png"/>
 
-## Usage
-### Parts
-For this project,
-an [ESP32-C3 WROOM Dev Board](https://core-electronics.com.au/esp32-c3-wroom-development-board.html) and a [9g Micro Servo](https://core-electronics.com.au/feetech-fs90-1-5kgcm-micro-servo-9g.html) were used.
-Theoretically, you could use any Arduino-enabled board and any servo motor.
+# Say What Now?!
 
-### Prerequisites
+## What is it?
+
+## What does it do?
+
+## How does it do it?
+
+# Build Guide
+
+## Parts
+
+### Purchased
+
+### Printed In Two Dimensions
+
+### Printed In Three Dimensions
+
+### Cardboard & Hot Glue
+
+## Make
+
+Servo
+The servo motor has to be connected to the ESP32 in the following way:
+
+| ESP32 | Servo                |
+|-------|----------------------|
+| GND   | - (Brown wire)       |
+| 5V    | + (Red wire)         |
+| 0     | Signal (Orange wire) |
+
+Note that you can use any of the GND or 5V pins on the ESP32.
+
+# (Quick) Start
+
+Prerequisites
 The only prerequisite for FIDGET is [PlatformIO Core](https://docs.platformio.org/en/latest/core/installation/index.html), a CLI for interfacing with the ESP32.
 
-### Secrets
+Secrets
 FIDGET uses the Amber API to fetch the current price descriptor.
 In order to accomplish this, you must have your WiFi and API credentials stored in a file called `src/secrets.h`.
 An example is provided below.
@@ -34,19 +62,16 @@ If you are using the debug server, you must add the following line to `secrets.h
 #define DEBUG_HOST "[YOUR IP ADDRESS OR HOSTNAME]"
 ```
 
-### Servo
-The servo motor has to be connected to the ESP32 in the following way:
+# Usage
 
-| ESP32 | Servo                |
-|-------|----------------------|
-| GND   | - (Brown wire)       |
-| 5V    | + (Red wire)         |
-| 0     | Signal (Orange wire) |
+Parts
+For this project,
+an [ESP32-C3 WROOM Dev Board](https://core-electronics.com.au/esp32-c3-wroom-development-board.html) and a [9g Micro Servo](https://core-electronics.com.au/feetech-fs90-1-5kgcm-micro-servo-9g.html) were used.
+Theoretically, you could use any Arduino-enabled board and any servo motor
 
-Note that you can use any of the GND or 5V pins on the ESP32.
+# Troubleshooting
 
-
-### Debug Server
+Debug Server
 To use the debug server, run `resources/debugServer.sh`, then enter your credentials when prompted.
 This script will copy real-time data from the Amber API into `resources/v1/sites/[YOUR SITE ID]/prices/current`,
 then start a local web server on port 8000 with Python's `http.server`.
@@ -56,7 +81,7 @@ On the ESP32 side, all you need to do is uncomment this line near the start of t
 #define USE_DEBUG_SERVER
 ```
 
-### Logging
+Logging
 The following table shows the status messages displayed on the ESP32 LED and in the Serial Monitor.
 A description of the state is in the `Status` column,
 the LED colour and Serial output are shown in the next two columns,
@@ -84,7 +109,7 @@ and the final column shows the minimum required log level to show the state.
 | Debug API not provided         | Red-Purple        | Debug API URL not provided. Using Amber API. | Warning |
 
 
-#### Notes
+Notes
 1. Where more than one colour is listed in the `LED Colour` column,
    the LED will flash the colours in sequence with a 300ms delay.
 2. The LED will show the appropriate colour no matter what the log level is set to.
