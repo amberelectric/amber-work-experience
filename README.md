@@ -17,7 +17,7 @@ It then translates this into a fire danger rating, and tells a servo motor to po
 
 ### Owned
 These parts are only needed to **make** the FIDGET. They are not required once it's running
-- Laptop (preferably should turn on)
+- Computer (preferably should turn on)
 - Hot Glue Gun
 - 2D Printer
 - 3D Printer (Not necessary. You can just tape or hot glue the components together.)
@@ -138,7 +138,8 @@ Then, cut out some more cardboard and hot glue it into a stand shape, like this:
 The design is primarily up to your imagination/engineering, but you should add a cross-beam to stop the cardboard from bending.
 
 ### 7. You did it!!
-Congragulations! You built the Amber FIDGET without blowing anything up!
+Congratulations!
+You built the Amber FIDGET without blowing anything up!
 Behold, the final product.
 (The paperclip is because I had glue issues.)
 
@@ -147,12 +148,12 @@ Behold, the final product.
 
 # (Quick) Start
 
-Prerequisites
+### Prerequisites
 The only prerequisite for FIDGET is [PlatformIO Core](https://docs.platformio.org/en/latest/core/installation/index.html), a CLI for interfacing with the ESP32.
 
-Secrets
+### Secrets file
 FIDGET uses the Amber API to fetch the current price descriptor.
-In order to accomplish this, you must have your WiFi and API credentials stored in a file called `src/secrets.h`.
+In order to accomplish this, you must have your WiFi and API credentials stored in `src/secrets.h`.
 An example is provided below.
 
 ```c++
@@ -168,27 +169,42 @@ To find your Site ID, run the following command and look for the `id` key.
 curl -H "Authorization: Bearer [YOUR API KEY]" https://api.amber.com.au/v1/sites
 ```
 
-If you are using the debug server, you must add the following line to `secrets.h` as well.
+Note: If you are using the debug server, you must add the following line to `secrets.h` as well.
 
 ```c++
 #define DEBUG_HOST "[YOUR IP ADDRESS OR HOSTNAME]"
 ```
 
+### Quick Run
+To quickly upload the code to the FIDGET, connect the ESP32 to your computer, then run `resources/scripts/upload.sh`.
+
 # Usage
 
-# Troubleshooting
+## Running the Code
+Multiple scripts are provided in `resources/scripts`.
+Each one serves a specific purpose:
+- `compile.sh` checks that your code can be compiled for the ESP32 but does not upload the code.
+- `upload.sh` compiles and uploads your code to the ESP32, then opens a serial monitor in your terminal.
+- `debug.sh` starts the debugging server on your device.
 
-Debug Server
+Note:
+Both `compile.sh` and `upload.sh` automatically install all required libraries via [the PlatformIO registry](https://registry.platformio.org).
+
+## Troubleshooting
+
+### Debug Server
 To use the debug server, run `resources/debugServer.sh`, then enter your credentials when prompted.
 This script will copy real-time data from the Amber API into `resources/v1/sites/[YOUR SITE ID]/prices/current`,
 then start a local web server on port 8000 with Python's `http.server`.
 
-On the ESP32 side, all you need to do is uncomment this line near the start of the file:
+On the ESP32 side,
+all you need to do is define `DEBUG_HOST` in `secrets.h` (see "Secrets File")
+and uncomment this line near the start of `main.cpp`:
 ```c++
 #define USE_DEBUG_SERVER
 ```
 
-Logging
+## Logging
 The following table shows the status messages displayed on the ESP32 LED and in the Serial Monitor.
 A description of the state is in the `Status` column,
 the LED colour and Serial output are shown in the next two columns,
