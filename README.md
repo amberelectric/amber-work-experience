@@ -1,4 +1,4 @@
-<img style="border-radius: 25px; margin-top: 25px" alt="Amber FIDGET (Fire Danger But It&#39;s Electricity)" src="resources/images/Header/Header.png"/>
+![Amber FIDGET - Fire Danger but it's Electricity](resources/images/Header/Header.png)
 
 # Say What Now?!
 
