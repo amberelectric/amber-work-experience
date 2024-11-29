@@ -1,12 +1,15 @@
 ![Amber FIDGET - Fire Danger but it's Electricity](resources/images/Header/Header.png)
 
-# Say What Now?!
+# Intro / Say What Now?!
 
-## What is it?
+### What is it an what does it do?
+The Amber FIDGET is a miniature Fire Danger Rating sign that displays the current power price descriptor for your house.
 
-## What does it do?
-
-## How does it do it?
+### How does it do it?
+The FIDGET connects to your Wi-Fi network
+and uses the [Amber API](https://app.amber.com.au/developers/documentation/)
+to fetch the current price descriptor for your property.
+It then translates this into a fire danger rating, and tells a servo motor to point at that rating, with 'tweening'.
 
 # Build Guide
 
